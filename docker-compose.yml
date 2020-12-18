@@ -1,0 +1,27 @@
+version: "3.9"
+   
+services:
+  api-gateway:
+    image: nginx
+    volumes:
+    - E:\Documents\University Infrastructure\Courses\dotnet\Proiect\Iris-Flower-Classifier\Auth-API-V1\API\API\nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+    - "8080:80"
+    environment:
+    - NGINX_PORT=80
+    depends_on:
+    - identity-api
+    - classification-api
+  identity-api:
+    image: alexich28/dotnet-project:identity3
+    volumes:
+     - E:\Documents\University Infrastructure\Courses\dotnet\Proiect\Iris-Flower-Classifier\Auth-API-V1\API\API\userapp.db:/app/userapp.db
+    ports:
+     - "1026:80"
+
+  classification-api:
+   image: alexich28/dotnet-project:ml-api
+   volumes:
+   - E:\Documents\University Infrastructure\Courses\dotnet\Proiect\Iris-Flower-Classifier\ML-API-V1\ML-API-V1\MLModels\IrisClusteringModel.zip:/app/MLModels/IrisClusteringModel.zip
+   ports:
+   - "1027:80"
