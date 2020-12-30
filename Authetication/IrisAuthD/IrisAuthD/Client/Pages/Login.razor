@@ -1,0 +1,71 @@
+﻿@page "/login"
+@using IrisAuthD.Shared 
+@using IrisAuthD.Client.States 
+@layout LoginLayout
+@inject NavigationManager navigationManager
+@inject IdentityAuthenticationStateProvider authStateProvider
+
+<div class="col-8 card">
+    <div class="col-12 row">
+        <p>&nbsp;</p>
+    </div>
+    <div class="col-12 row">
+        <div class="col-6" style="border-right:groove">
+            <img src="/images/iris.jpg" width="400px" height="400px" />
+        </div>
+        <div class="col-6" style="border-left:groove">
+            <EditForm class="form-signin" OnValidSubmit="OnSubmit" Model="loginParameters">
+                <DataAnnotationsValidator />
+                <div>
+                    <br /><br /><br /><br /><br />
+                </div>
+                <div>
+                    <h3 style="font-weight:bold; color:rebeccapurple">Iris Flower</h3>
+                </div>
+                <div>
+                    <h3 style="font-weight:bold">Login</h3>
+                </div>
+                <div>
+                    <br />
+                </div>
+                <label for="inputUsername" class="sr-only">User Name</label>
+
+                <InputText id="inputUsername" class="form-control" @bind-Value="loginParameters.UserName" autofocus placeholder="Username" />
+                <ValidationMessage For="@(() => loginParameters.UserName)" />
+
+                <label for="inputPassword" class="sr-only">Password</label>
+                <InputText type="password" id="inputPassword" class="form-control" placeholder="Password" @bind-Value="loginParameters.Password" />
+                <ValidationMessage For="@(() => loginParameters.Password)" />
+
+                <div class="form-check m-3">
+                    <InputCheckbox id="inputRememberMe" class="form-check-input" @bind-Value="@loginParameters.RememberMe" />
+                    <label class="form-check-label" for="inputRememberMe">Remember Me</label>
+                </div>
+
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+
+                <label class="text-danger">@error</label>
+
+                <NavLink href="register">
+                    <h6 class="font-weight-normal text-center">Create account</h6>
+                </NavLink>
+            </EditForm>
+        </div>
+    </div>
+</div>
+@code{ LoginParameters loginParameters { get; set; } = new LoginParameters();
+            string error { get; set; }
+
+            async Task OnSubmit()
+            {
+                error = null;
+                try
+                {
+                    await authStateProvider.Login(loginParameters);
+                    navigationManager.NavigateTo("");
+                }
+                catch (Exception ex)
+                {
+                    error = ex.Message;
+                }
+            } }
