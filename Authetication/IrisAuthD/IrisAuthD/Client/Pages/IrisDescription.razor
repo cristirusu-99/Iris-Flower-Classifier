@@ -1,0 +1,51 @@
+﻿@page "/irisdescription"
+@using Microsoft.AspNetCore.Authorization;
+@using IrisAuthD.Shared;
+@attribute [Authorize]
+
+<h1>Iris description</h1>
+
+<EditForm Model="@attributes">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    Length Petals
+    <div class="row form-group">
+        <div class="col-6">
+            <input class="form-control" type="text" @bind-value="attributes.PetalLength" placeholder="Length Petals" />
+        </div>
+    </div>
+    Width Petals
+    <div class="row form-group">
+        <div class="col-6">
+            <input class="form-control" type="text" @bind-value="attributes.PetalWidth" placeholder="Width Petals" />
+        </div>
+    </div>
+    Length Sepals
+    <div class="row form-group">
+        <div class="col-6">
+            <input class="form-control" type="text" @bind-value="attributes.SepalLength" placeholder="Length Sepals" />
+        </div>
+    </div>
+    Width Petals
+    <div class="row form-group">
+        <div class="col-6">
+            <input class="form-control" type="text" @bind-value="attributes.SepalWidth" placeholder="Width Petals" />
+        </div>
+    </div>
+    Choose an image
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="ProfileImage" class="control-label"></label>
+            <div class="custom-file">
+                <input asp-for="ProfileImage" class="custom-file-input" id="customFile">
+                <label class="custom-file-label" for="customFile">Choose file</label>
+            </div>
+            <span asp-validation-for="ProfileImage" class="text-danger"></span>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Send</button>
+
+</EditForm>
+@code { private string returnUrl = "";
+    private bool showLogin = true;
+   IrisInfo attributes = new IrisInfo(); }
