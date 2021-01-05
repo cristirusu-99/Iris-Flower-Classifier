@@ -1,6 +1,9 @@
 ﻿@page "/irisdescription"
 @using Microsoft.AspNetCore.Authorization;
 @using IrisAuthD.Shared;
+@using System.IO
+@using BlazorInputFile
+@inject HttpClient client
 @attribute [Authorize]
 
 <h1>Iris description</h1>
@@ -11,41 +14,64 @@
     Length Petals
     <div class="row form-group">
         <div class="col-6">
-            <input class="form-control" type="text" @bind-value="attributes.PetalLength" placeholder="Length Petals" />
+            <input class="form-control" type="text" @bind-value="attributes.PetalLength" placeholder="Petal Length " />
         </div>
     </div>
     Width Petals
     <div class="row form-group">
         <div class="col-6">
-            <input class="form-control" type="text" @bind-value="attributes.PetalWidth" placeholder="Width Petals" />
+            <input class="form-control" type="text" @bind-value="attributes.PetalWidth" placeholder="Petal Width" />
         </div>
     </div>
     Length Sepals
     <div class="row form-group">
         <div class="col-6">
-            <input class="form-control" type="text" @bind-value="attributes.SepalLength" placeholder="Length Sepals" />
+            <input class="form-control" type="text" @bind-value="attributes.SepalLength" placeholder="Sepal Length" />
         </div>
     </div>
     Width Petals
     <div class="row form-group">
         <div class="col-6">
-            <input class="form-control" type="text" @bind-value="attributes.SepalWidth" placeholder="Width Petals" />
-        </div>
-    </div>
-    Choose an image
-    <div class="col-md-6">
-        <div class="form-group">
-            <label asp-for="ProfileImage" class="control-label"></label>
-            <div class="custom-file">
-                <input asp-for="ProfileImage" class="custom-file-input" id="customFile">
-                <label class="custom-file-label" for="customFile">Choose file</label>
-            </div>
-            <span asp-validation-for="ProfileImage" class="text-danger"></span>
+            <input class="form-control" type="text" @bind-value="attributes.SepalWidth" placeholder="Petal Width" />
         </div>
     </div>
     <button type="submit" class="btn btn-primary">Send</button>
-
 </EditForm>
-@code { private string returnUrl = "";
+
+<h1>Distance calculator</h1>
+<p>Load an image to calculate necessary distances</p>
+@*<div class="col-md-6">
+    <div class="form-group">
+        <label asp-for="ProfileImage" class="control-label"></label>
+        <div class="custom-file">
+            <input asp-for="ProfileImage" class="custom-file-input" id="customFile">
+            <label class="custom-file-label" for="customFile">Choose file</label>
+        </div>
+        <span asp-validation-for="ProfileImage" class="text-danger"></span>
+    </div>
+</div>*@
+
+<InputFile OnChange="HandleSelection"></InputFile>
+<p>@status</p>
+
+@code{ 
+    private string returnUrl = "";
     private bool showLogin = true;
-   IrisInfo attributes = new IrisInfo(); }
+    IrisInfo attributes = new IrisInfo();
+    string status;
+    async Task HandleSelection(IFileListEntry[] files)
+    {
+        var file = files.FirstOrDefault();
+        if (file != null)
+        {
+            var ms = new MemoryStream();
+            await file.Data.CopyToAsync(ms);
+            status = $"Upload {file.Size} bytes from {file.Name}";
+            var content = new MultipartFormDataContent
+            {
+                {new ByteArrayContent(ms.GetBuffer()), "\"upload\"", file.Name }
+            };
+            await client.PostAsync("upload", content);
+        }
+    }
+}
