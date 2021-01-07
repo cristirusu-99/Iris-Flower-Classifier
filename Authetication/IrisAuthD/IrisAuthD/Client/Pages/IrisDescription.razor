@@ -1,9 +1,13 @@
 ﻿@page "/irisdescription"
+
 @using Microsoft.AspNetCore.Authorization;
 @using IrisAuthD.Shared;
 @using System.IO
 @using BlazorInputFile
-@inject HttpClient client
+
+@inject HttpClient HttpClient
+@inject IJSRuntime JSRuntime
+
 @attribute [Authorize]
 
 <h1>Iris description</h1>
@@ -32,32 +36,36 @@
     Width Petals
     <div class="row form-group">
         <div class="col-6">
-            <input class="form-control" type="text" @bind-value="attributes.SepalWidth" placeholder="Petal Width" />
+            <input class="form-control" type="text" @bind-value="attributes.SepalWidth" placeholder="Sepal Width" />
         </div>
     </div>
+    @*<div class="col-md-6">
+    <div class="form-group">
+    <label asp-for="ProfileImage" class="control-label"></label>
+    <div class="custom-file">
+    <input asp-for="ProfileImage" class="custom-file-input" id="customFile">
+    <label class="custom-file-label" for="customFile">Choose file</label>
+    </div>
+    <span asp-validation-for="ProfileImage" class="text-danger"></span>
+    </div>
+    </div>*@
     <button type="submit" class="btn btn-primary">Send</button>
 </EditForm>
 
 <h1>Distance calculator</h1>
 <p>Load an image to calculate necessary distances</p>
-@*<div class="col-md-6">
-    <div class="form-group">
-        <label asp-for="ProfileImage" class="control-label"></label>
-        <div class="custom-file">
-            <input asp-for="ProfileImage" class="custom-file-input" id="customFile">
-            <label class="custom-file-label" for="customFile">Choose file</label>
-        </div>
-        <span asp-validation-for="ProfileImage" class="text-danger"></span>
-    </div>
-</div>*@
-
 <InputFile OnChange="HandleSelection"></InputFile>
 <p>@status</p>
+<br />
+<button @onclick="OnClickDownloadButton1">Download1</button>
+<button @onclick="OnClickDownloadButton2">Download2</button>
 
-@code{ 
+@code{
     private string returnUrl = "";
     private bool showLogin = true;
     IrisInfo attributes = new IrisInfo();
+
+    //file upload
     string status;
     async Task HandleSelection(IFileListEntry[] files)
     {
@@ -68,10 +76,33 @@
             await file.Data.CopyToAsync(ms);
             status = $"Upload {file.Size} bytes from {file.Name}";
             var content = new MultipartFormDataContent
-            {
-                {new ByteArrayContent(ms.GetBuffer()), "\"upload\"", file.Name }
-            };
-            await client.PostAsync("upload", content);
+    {
+    {new ByteArrayContent(ms.GetBuffer()), "\"upload\"", file.Name }
+    };
+            await HttpClient.PostAsync("upload", content);
         }
+    }
+
+    //file download
+    private async Task OnClickDownloadButton1()
+    {
+        await JSRuntime.InvokeVoidAsync("downloadZip");
+    }
+    private async Task OnClickDownloadButton2()
+    {
+        // Please imagine the situation that the API is protected by
+        // token-based authorization (non cookie-based authorization).
+        var bytes = await HttpClient.GetByteArrayAsync("api/download/util2");
+
+        await JSRuntime.InvokeVoidAsync("console.log", bytes);
+
+        await JSRuntime.InvokeVoidAsync(
+          "downloadFromByteArray",
+          new
+          {
+              ByteArray = bytes,
+              FileName = "Distance Calculator.zip",
+              ContentType = "application/zip"
+          });
     }
 }
