@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  irisauthd.server:
+    image: ${DOCKER_REGISTRY-}irisauthdserver
+    build:
+      context: .
+      dockerfile: IrisAuthD\Server\Dockerfile
