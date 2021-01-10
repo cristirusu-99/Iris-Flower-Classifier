@@ -1,0 +1,9 @@
+version: "3.9"
+   
+services:
+  clasification-api:
+    image: microservices/ml-api
+    volumes:
+     - E:\Documents\University Infrastructure\Courses\dotnet\Proiect\Iris-Flower-Classifier\ML-API-V1\ML-API-V1\MLModels\IrisClusteringModel.zip:/app/MLModels/IrisClusteringModel.zip
+    ports:
+     - "1027:80"

@@ -31,7 +31,7 @@ namespace IrisAuthD.Server.Controllers
             HostEnvironment = hostEnvironment;
         }
 
-        [HttpGet("/util1")]
+        [HttpGet("util1")]
         public async Task<IActionResult> GetUtil1()
         {
             var zipStream = GetZipStream();
@@ -39,7 +39,7 @@ namespace IrisAuthD.Server.Controllers
             return File(zipStream, "application/octet-stream");
         }
 
-        [HttpGet("/util2")]
+        [HttpGet("util2")]
         public async Task<IActionResult> GetUtil2()
         {
             var fileInfo = this.HostEnvironment.ContentRootFileProvider.GetFileInfo("resources/Distance Calculator.zip");
