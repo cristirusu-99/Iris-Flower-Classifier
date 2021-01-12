@@ -1,0 +1,200 @@
+﻿@page "/irisclassifier"
+@using Microsoft.JSInterop
+@using BlazorInputFile
+@using Excubo.Blazor.Canvas
+@using System.IO;
+@using System.Net.Http;
+
+
+
+
+
+<h3>Iris Classification</h3>
+<p>Please upload a picture of a Iris flower and our system will classify it for you.</p>
+
+
+<hr />
+<img id="uploaded_image" width=600px height=600px style="display:none" src="@picture" />
+
+<hr />
+<div @ref="container">
+    <Canvas @ref="canvas" width=600px height=600px @onmouseup="MouseUpCanvas" @onmousedown="MouseDownCanvas" style="border: 5px solid blue" />
+</div>
+<br />
+<InputFile OnChange="HandleSelection"></InputFile>
+<br />
+<br />
+<button @onclick="GetDistance">Get size</button>
+<br />
+<button @onclick="Classify">Classify</button>
+<br />
+<ul>
+    @if (flowerDimensions.Count != 0)
+    {
+        foreach (var item in flowerDimensions)
+        {
+            if (item.Value.Count != 0)
+            {
+                <li>@item.Key</li>
+                for (int i = 0; i < item.Value.Count; ++i)
+                {
+                    <li>@item.Value[i]</li>
+                    ;
+                }
+            }
+        }
+    }
+</ul>
+
+@inject IJSRuntime js
+@inject HttpClient Http;
+
+@code {
+
+    private Canvas canvas;
+    private ElementReference container;
+    string picture;
+    bool firstRender = true;
+    private double canvasx;
+    private double canvasy;
+    private double last_mousex;
+    private double last_mousey;
+    private double mousex;
+    private double mousey;
+    private bool mousedown = false;
+
+    private List<List<double>> lastTwoPoints = new List<List<double>>();
+    private Dictionary<string, List<double>> flowerDimensions = new Dictionary<string, List<double>>();
+
+
+    private double euclideanDistance()
+    {
+        double distance = Math.Sqrt(Math.Pow(lastTwoPoints[0][0] - lastTwoPoints[1][0], 2) + Math.Pow(lastTwoPoints[0][1] - lastTwoPoints[1][1], 2));
+        lastTwoPoints.Clear();
+
+        return distance;
+    }
+
+
+    private async Task Classify()
+    {
+        if (flowerDimensions["petal"].Count != 2)
+            return;
+
+        if (flowerDimensions["sepal"].Count != 2)
+            return;
+
+        var response = await Http.PostAsJsonAsync("http://localhost:8080/api/v1/predictions", flowerDimensions);
+        await js.InvokeVoidAsync("console.log", response.Content);
+    }
+
+
+    private void GetDistance()
+
+    {
+        if (flowerDimensions.Count == 0)
+        {
+            flowerDimensions.Add("sepal", new List<double>());
+            flowerDimensions.Add("petal", new List<double>());
+        }
+
+        if (flowerDimensions["sepal"].Count != 2)
+        {
+            flowerDimensions["sepal"].Add(euclideanDistance());
+            return;
+        }
+
+        if (flowerDimensions["petal"].Count != 2)
+        {
+            flowerDimensions["petal"].Add(euclideanDistance());
+            return;
+        }
+
+
+    }
+
+    private class Position
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+    }
+
+
+    async Task HandleSelection(IFileListEntry[] files)
+    {
+        var file = files.FirstOrDefault();
+        string base64_data;
+
+
+        if (firstRender)
+        {
+            var p = await js.InvokeAsync<Position>("eval", $"let e = document.querySelector('[_bl_{container.Id}=\"\"]'); e = e.getBoundingClientRect(); e = {{ 'Left': e.x, 'Top': e.y }}; e");
+            (canvasx, canvasy) = (p.Left, p.Top);
+            firstRender = false;
+
+        }
+
+        if (file != null)
+        {
+
+            using (var stream = file.Data)
+            {
+
+                using (var ms = new MemoryStream())
+                {
+
+                    await stream.CopyToAsync(ms);
+                    await js.InvokeVoidAsync("console.log", ms.ToArray());
+                    await js.InvokeVoidAsync("console.log", file.Data.Length);
+                    base64_data = System.Convert.ToBase64String(ms.ToArray());
+                    picture = $"data:image/jpg;base64, {base64_data}";
+                    UpdateCanvasAsync();
+                }
+            }
+
+        }
+
+    }
+
+
+    private async Task UpdateCanvasAsync()
+    {
+        await js.InvokeVoidAsync("eval", "myimage = document.getElementById('uploaded_image')");
+        await using (var ctx = await canvas.GetContext2DAsync())
+        {
+            await ctx.ClearRectAsync(0, 0, 600, 600);
+            await ctx.SetTransformAsync(1, 0, 0, 1, 0, 0);
+            await ctx.RestoreAsync();
+            await ctx.SaveAsync();
+            await ctx.DrawImageAsync("myimage", 0, 0);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task MouseDownCanvas(MouseEventArgs e)
+    {
+        this.last_mousex = e.ClientX - canvasx;
+        this.last_mousey = e.ClientY - canvasy;
+
+        if (lastTwoPoints.Count == 0)
+            lastTwoPoints.Add(new List<double>() { this.last_mousex, this.last_mousey });
+        else
+            if (lastTwoPoints.Count == 1)
+            lastTwoPoints.Add((new List<double>() { this.last_mousex, this.last_mousey }));
+        else
+                if (lastTwoPoints.Count % 2 == 0)
+            lastTwoPoints[0] = new List<double>() { this.last_mousex, this.last_mousey };
+        else
+            lastTwoPoints[1] = new List<double>() { this.last_mousex, this.last_mousey };
+
+
+        await js.InvokeVoidAsync("console.log", last_mousex, last_mousey);
+        this.mousedown = true;
+    }
+
+    private void MouseUpCanvas(MouseEventArgs e)
+    {
+        mousedown = false;
+    }
+
+}
