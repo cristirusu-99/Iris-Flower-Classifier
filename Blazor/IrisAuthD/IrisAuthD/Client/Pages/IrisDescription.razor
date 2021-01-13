@@ -18,13 +18,16 @@
 
 <hr />
 <div @ref="container">
-    <Canvas @ref="canvas" width=600px height=600px @onmouseup="MouseUpCanvas" @onmousedown="MouseDownCanvas" style="border: 5px solid blue" />
+    <Canvas @ref="canvas" width=600px height=600px background-size=contain @onmouseup="MouseUpCanvas" @onmousedown="MouseDownCanvas" style="border: 5px solid blue" />
 </div>
 <br />
 <InputFile OnChange="HandleSelection"></InputFile>
 <br />
 <br />
 <button @onclick="GetDistance">Get size</button>
+<br />
+
+
 <br />
 <button @onclick="Classify">Classify</button>
 <br />
@@ -45,11 +48,33 @@
         }
     }
 </ul>
+@if (validSizeInput == false)
+{
+    <p>Please insert strictly positive values.</p>
+}
+
+@if (response != null)
+{
+    var content = response.Content.ReadAsStringAsync();
+    <p>Your flower is an @content.Result . </p>
+}
 
 @inject IJSRuntime js
 @inject HttpClient Http;
 
 @code {
+
+    private class Position
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+    }
+
+    private class PictureSize
+    {
+        public double realWidth { get; set; }
+        public double realHeight { get; set; }
+    }
 
     private Canvas canvas;
     private ElementReference container;
@@ -62,10 +87,20 @@
     private double mousex;
     private double mousey;
     private bool mousedown = false;
+    HttpResponseMessage response = null;
+    bool validSizeInput = true;
+    PictureSize ps = new PictureSize();
 
     private List<List<double>> lastTwoPoints = new List<List<double>>();
     private Dictionary<string, List<double>> flowerDimensions = new Dictionary<string, List<double>>();
 
+    async Task HandleValidSubmit()
+    {
+        if(ps.realHeight <= 0 || ps.realWidth <= 0)
+        {
+            validSizeInput = false;
+        }
+    }
 
     private double euclideanDistance()
     {
@@ -75,7 +110,6 @@
         return distance;
     }
 
-
     private async Task Classify()
     {
         if (flowerDimensions["petal"].Count != 2)
@@ -84,10 +118,11 @@
         if (flowerDimensions["sepal"].Count != 2)
             return;
 
-        var response = await Http.PostAsJsonAsync("http://localhost:8080/api/v1/predictions", flowerDimensions);
-        await js.InvokeVoidAsync("console.log", response.Content);
-    }
+        response = await Http.PostAsJsonAsync("http://localhost:8080/api/v1/predictions", flowerDimensions);
 
+
+        flowerDimensions.Clear();
+    }
 
     private void GetDistance()
 
@@ -112,13 +147,6 @@
 
 
     }
-
-    private class Position
-    {
-        public double Left { get; set; }
-        public double Top { get; set; }
-    }
-
 
     async Task HandleSelection(IFileListEntry[] files)
     {
@@ -148,6 +176,7 @@
                     await js.InvokeVoidAsync("console.log", file.Data.Length);
                     base64_data = System.Convert.ToBase64String(ms.ToArray());
                     picture = $"data:image/jpg;base64, {base64_data}";
+                    response = null;
                     UpdateCanvasAsync();
                 }
             }
@@ -155,7 +184,6 @@
         }
 
     }
-
 
     private async Task UpdateCanvasAsync()
     {

@@ -1,7 +1,4 @@
 "use strict";
-
-
-
 function downloadFromUrl(options) {
     var _a;
     var anchorElement = document.createElement('a');
