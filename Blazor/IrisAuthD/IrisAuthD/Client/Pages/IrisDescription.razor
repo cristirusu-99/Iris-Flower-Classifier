@@ -6,19 +6,16 @@
 @using System.Net.Http;
 
 
-
-
-
 <h3>Iris Classification</h3>
 <p>Please upload a picture of a Iris flower and our system will classify it for you.</p>
 
 
 <hr />
-<img id="uploaded_image" width=600px height=600px style="display:none" src="@picture" />
+<img id="uploaded_image" style="display:none" src="@picture" />
 
 <hr />
 <div @ref="container">
-    <Canvas @ref="canvas" width=600px height=600px background-size=contain @onmouseup="MouseUpCanvas" @onmousedown="MouseDownCanvas" style="border: 5px solid blue" />
+    <Canvas @ref="canvas" width=600px height=600px background-size=300% @onmouseup="MouseUpCanvas" @onmousedown="MouseDownCanvas" style="border: 5px solid blue" />
 </div>
 <br />
 <InputFile OnChange="HandleSelection"></InputFile>
@@ -190,11 +187,15 @@
         await js.InvokeVoidAsync("eval", "myimage = document.getElementById('uploaded_image')");
         await using (var ctx = await canvas.GetContext2DAsync())
         {
+
+
+            double[] dimensions = await js.InvokeAsync<double[]>("getImageSize");
+            await js.InvokeVoidAsync("console.log", dimensions);
             await ctx.ClearRectAsync(0, 0, 600, 600);
             await ctx.SetTransformAsync(1, 0, 0, 1, 0, 0);
             await ctx.RestoreAsync();
             await ctx.SaveAsync();
-            await ctx.DrawImageAsync("myimage", 0, 0);
+            await ctx.DrawImageAsync("myimage", 0, 0, dimensions[0], dimensions[1], 0, 0, 600, 600);
             await InvokeAsync(StateHasChanged);
         }
     }

@@ -47,3 +47,13 @@ function downloadData(filenameForDownload: string, data: any) {
     element.click();
     document.body.removeChild(element);
 }
+
+function getImageSize() {
+
+    var img2 = document.getElementById("uploaded_image")
+    if(img2 != null)
+        return [img2.clientHeight, img2.clientHeight]
+    else
+        return [-1,-1]
+
+}
