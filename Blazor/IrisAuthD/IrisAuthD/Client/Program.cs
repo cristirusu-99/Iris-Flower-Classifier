@@ -7,9 +7,19 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace IrisAuthD.Client
 {
+
+    public class ImageAtributes
+    {
+        [Required]
+        public double ImageHeight { get; set; }
+        [Required]
+        public double ImageWidth { get; set; }
+    }
+
     public class Program
     {
         public static async Task Main(string[] args)

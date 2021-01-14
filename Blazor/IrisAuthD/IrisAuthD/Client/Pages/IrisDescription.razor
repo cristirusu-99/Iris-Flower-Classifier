@@ -4,6 +4,7 @@
 @using Excubo.Blazor.Canvas
 @using System.IO;
 @using System.Net.Http;
+@using System.Collections.Generic;
 
 
 <h3>Iris Classification</h3>
@@ -20,6 +21,27 @@
 <br />
 <InputFile OnChange="HandleSelection"></InputFile>
 <br />
+
+<EditForm Model="@attributes">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <h2> Real image dimensions: </h2>
+    Image Width (cm):
+    <div class="row form-group">
+        <div class="col-6">
+            <input class="form-control" type="text" @bind-value="attributes.ImageWidth" placeholder="Image Width (cm)" />
+        </div>
+    </div>
+    Image Height (cm):
+    <div class="row form-group">
+        <div class="col-6">
+            <input class="form-control" type="text" @bind-value="attributes.ImageHeight" placeholder="Image Height (cm)" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" @onclick = "PrintAtributes">Set</button>
+</EditForm>
+
 <br />
 <button @onclick="GetDistance">Get size</button>
 <br />
@@ -73,6 +95,7 @@
         public double realHeight { get; set; }
     }
 
+    private ImageAtributes attributes = new ImageAtributes();
     private Canvas canvas;
     private ElementReference container;
     string picture;
@@ -91,6 +114,11 @@
     private List<List<double>> lastTwoPoints = new List<List<double>>();
     private Dictionary<string, List<double>> flowerDimensions = new Dictionary<string, List<double>>();
 
+    async Task PrintAtributes()
+    {
+        await js.InvokeVoidAsync("alert", "Image Height set to " + attributes.ImageHeight + "\nImage Width set to " + attributes.ImageWidth);
+    }
+
     async Task HandleValidSubmit()
     {
         if(ps.realHeight <= 0 || ps.realWidth <= 0)
@@ -101,7 +129,9 @@
 
     private double euclideanDistance()
     {
-        double distance = Math.Sqrt(Math.Pow(lastTwoPoints[0][0] - lastTwoPoints[1][0], 2) + Math.Pow(lastTwoPoints[0][1] - lastTwoPoints[1][1], 2));
+        double scaleH = attributes.ImageHeight / 600;
+        double scaleW = attributes.ImageWidth / 600;
+        double distance = Math.Sqrt(Math.Pow((lastTwoPoints[0][0] - lastTwoPoints[1][0]) * scaleW, 2) + Math.Pow((lastTwoPoints[0][1] - lastTwoPoints[1][1]) * scaleH, 2));
         lastTwoPoints.Clear();
 
         return distance;
@@ -115,14 +145,13 @@
         if (flowerDimensions["sepal"].Count != 2)
             return;
 
-        response = await Http.PostAsJsonAsync("http://localhost:8080/api/v1/predictions", flowerDimensions);
+        response = await Http.PostAsJsonAsync("http://localhost:8080/api/v1/predictions", GetJSONToPost());
 
 
         flowerDimensions.Clear();
     }
 
     private void GetDistance()
-
     {
         if (flowerDimensions.Count == 0)
         {
@@ -141,8 +170,16 @@
             flowerDimensions["petal"].Add(euclideanDistance());
             return;
         }
+    }
 
-
+    private Dictionary<string, double> GetJSONToPost()
+    {
+        Dictionary<string, double> tempDict = new Dictionary<string, double>();
+        tempDict["SepalLength"] = flowerDimensions["sepal"][0];
+        tempDict["SepalWidth"] = flowerDimensions["sepal"][1];
+        tempDict["PetalLength"] = flowerDimensions["petal"][0];
+        tempDict["PtealWidth"] = flowerDimensions["petal"][1];
+        return tempDict;
     }
 
     async Task HandleSelection(IFileListEntry[] files)
