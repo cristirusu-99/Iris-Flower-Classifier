@@ -4,19 +4,14 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
-    <Folder Include="Data\" />
+    <PackageReference Include="Microsoft.ML" Version="1.5.0-preview2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModelTrainer.v2ML.Model\ModelTrainer.v2ML.Model.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ML" Version="1.5.2" />
+    <ProjectCapability Include="ModelBuilderGenerated" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Data\iris.data">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
