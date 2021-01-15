@@ -5,7 +5,7 @@
 @using System.IO;
 @using System.Net.Http;
 @using System.Collections.Generic;
-@using IrisAuthD.Shared;
+
 
 <h3>Iris Classification</h3>
 <p>Please upload a picture of a Iris flower and our system will classify it for you.</p>
@@ -18,16 +18,8 @@
 <div @ref="container">
     <Canvas @ref="canvas" width=600px height=600px background-size=300% @onmouseup="MouseUpCanvas" @onmousedown="MouseDownCanvas" style="border: 5px solid blue" />
 </div>
-
 <br />
 <InputFile OnChange="HandleSelection"></InputFile>
-<br />
-
-<br />
-<br />
-<div class="input-group-append">
-    <button @onclick="Upload">Upload</button>
-</div>
 <br />
 
 <EditForm Model="@attributes">
@@ -47,7 +39,7 @@
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary" @onclick="PrintAtributes">Set</button>
+    <button type="submit" class="btn btn-primary" @onclick = "PrintAtributes">Set</button>
 </EditForm>
 
 <br />
@@ -77,19 +69,21 @@
 </ul>
 @if (validSizeInput == false)
 {
-    <p>Please insert strictly positive values.</p>}
+    <p>Please insert strictly positive values.</p>
+}
 
 @if (response != null)
 {
     var content = response.Content.ReadAsStringAsync();
     <p>Your flower is an @content.Result . </p>
-    name_image = @content.Result;
 }
 
 @inject IJSRuntime js
 @inject HttpClient Http;
 
-@code { private class Position
+@code {
+
+    private class Position
     {
         public double Left { get; set; }
         public double Top { get; set; }
@@ -116,21 +110,9 @@
     HttpResponseMessage response = null;
     bool validSizeInput = true;
     PictureSize ps = new PictureSize();
-    string name_image;
 
     private List<List<double>> lastTwoPoints = new List<List<double>>();
     private Dictionary<string, List<double>> flowerDimensions = new Dictionary<string, List<double>>();
-
-    List<ImageFile> filesBase64 = new List<ImageFile>();
-    string message = "InputFile";
-    bool isDisabled = false;
-
-
-    async Task Upload()
-    {
-        var msg = await Http.PostAsJsonAsync<List<ImageFile>>("/api/upload", filesBase64, System.Threading.CancellationToken.None);
-
-    }
 
     async Task PrintAtributes()
     {
@@ -139,7 +121,7 @@
 
     async Task HandleValidSubmit()
     {
-        if (ps.realHeight <= 0 || ps.realWidth <= 0)
+        if(ps.realHeight <= 0 || ps.realWidth <= 0)
         {
             validSizeInput = false;
         }
@@ -228,7 +210,6 @@
                     await js.InvokeVoidAsync("console.log", file.Data.Length);
                     base64_data = System.Convert.ToBase64String(ms.ToArray());
                     picture = $"data:image/jpg;base64, {base64_data}";
-                    filesBase64.Add(new ImageFile { base64data = base64_data, fileName = name_image });
                     response = null;
                     UpdateCanvasAsync();
                 }
@@ -280,4 +261,6 @@
     private void MouseUpCanvas(MouseEventArgs e)
     {
         mousedown = false;
-    } }
+    }
+
+}

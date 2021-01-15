@@ -47,9 +47,9 @@ function downloadData(filenameForDownload, data) {
     document.body.removeChild(element);
 }
 function getImageSize() {
-    var img2 = document.getElementById("uploaded_image");
+    var img2 = document.getElementById("uploaded_image")
     if (img2 != null)
-        return [img2.clientHeight, img2.clientHeight];
+        return [img2.width, img2.height]
     else
-        return [-1, -1];
+        return [-1, -1]
 }
