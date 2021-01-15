@@ -51,12 +51,12 @@
 </EditForm>
 
 <br />
-<button @onclick="GetDistance">Get size</button>
+<button class="btn btn-primary" @onclick="GetDistance">Get size</button>
 <br />
 
 
 <br />
-<button @onclick="Classify">Classify</button>
+<button class="btn btn-primary" @onclick="Classify">Classify</button>
 <br />
 <ul>
     @if (flowerDimensions.Count != 0)
@@ -110,8 +110,6 @@
     private double canvasy;
     private double last_mousex;
     private double last_mousey;
-    private double mousex;
-    private double mousey;
     private bool mousedown = false;
     HttpResponseMessage response = null;
     bool validSizeInput = true;
@@ -122,8 +120,8 @@
     private Dictionary<string, List<double>> flowerDimensions = new Dictionary<string, List<double>>();
 
     List<ImageFile> filesBase64 = new List<ImageFile>();
-    string message = "InputFile";
-    bool isDisabled = false;
+    //string message = "InputFile";
+    //bool isDisabled = false;
 
 
     async Task Upload()
@@ -230,7 +228,7 @@
                     picture = $"data:image/jpg;base64, {base64_data}";
                     filesBase64.Add(new ImageFile { base64data = base64_data, fileName = name_image });
                     response = null;
-                    UpdateCanvasAsync();
+                    await UpdateCanvasAsync();
                 }
             }
 
