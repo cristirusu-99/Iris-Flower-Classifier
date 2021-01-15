@@ -24,12 +24,6 @@
 <br />
 
 <br />
-<br />
-<div class="input-group-append">
-    <button @onclick="Upload">Upload</button>
-</div>
-<br />
-
 <EditForm Model="@attributes">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -85,6 +79,12 @@
     <p>Your flower is an @content.Result . </p>
     name_image = @content.Result;
 }
+
+<br />
+<div class="input-group-append">
+    <button class="btn btn-primary" @onclick="Upload">Upload</button>
+</div>
+<br />
 
 @inject IJSRuntime js
 @inject HttpClient Http;
@@ -243,13 +243,14 @@
         {
 
 
-            double[] dimensions = await js.InvokeAsync<double[]>("getImageSize");
-            await js.InvokeVoidAsync("console.log", dimensions);
+            //double[] dimensions = await js.InvokeAsync<double[]>("getImageSize");
+            //await js.InvokeVoidAsync("console.log", dimensions);
             await ctx.ClearRectAsync(0, 0, 600, 600);
             await ctx.SetTransformAsync(1, 0, 0, 1, 0, 0);
             await ctx.RestoreAsync();
             await ctx.SaveAsync();
-            await ctx.DrawImageAsync("myimage", 0, 0, dimensions[0], dimensions[1], 0, 0, 600, 600);
+            //await ctx.DrawImageAsync("myimage", 0, 0, dimensions[0], dimensions[1], 0, 0, 600, 600);
+            await ctx.DrawImageAsync("myimage", 0, 0, 600, 600);
             await InvokeAsync(StateHasChanged);
         }
     }
