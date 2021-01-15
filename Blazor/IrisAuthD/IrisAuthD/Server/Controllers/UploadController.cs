@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace IrisAuthD.Server.Controllers
 {
-    [Route("upload")]
+    [Route("[controller]")]
     [ApiController]
     public class UploadController : ControllerBase
     {
