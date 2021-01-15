@@ -43,12 +43,12 @@
 </EditForm>
 
 <br />
-<button @onclick="GetDistance">Get size</button>
+<button class="btn btn-primary" @onclick="GetDistance">Get size</button>
 <br />
 
 
 <br />
-<button @onclick="Classify">Classify</button>
+<button class="btn btn-primary" @onclick="Classify">Classify</button>
 <br />
 <ul>
     @if (flowerDimensions.Count != 0)
@@ -104,8 +104,6 @@
     private double canvasy;
     private double last_mousex;
     private double last_mousey;
-    private double mousex;
-    private double mousey;
     private bool mousedown = false;
     HttpResponseMessage response = null;
     bool validSizeInput = true;
@@ -211,7 +209,7 @@
                     base64_data = System.Convert.ToBase64String(ms.ToArray());
                     picture = $"data:image/jpg;base64, {base64_data}";
                     response = null;
-                    UpdateCanvasAsync();
+                    await UpdateCanvasAsync();
                 }
             }
 
